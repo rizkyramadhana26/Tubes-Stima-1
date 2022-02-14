@@ -41,9 +41,9 @@ public class Bot {
         Car opponent = gameState.opponent;
 
         List<Object> viewableBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
-        List<Object> blocks = viewableBlocks.subList(0,myCar.speed+1);
-        List<Object> blocksIfAccelerating = viewableBlocks.subList(0,nextSpeedState(myCar.speed,myCar.damage)+1);
-        List<Object> blocksIfBoost = viewableBlocks.subList(0,speedIfBoost(myCar.damage)+1);
+        List<Object> blocks = viewableBlocks.subList(0,nextMaxBlock(myCar, myCar.speed+1));
+        List<Object> blocksIfAccelerating = viewableBlocks.subList(0,nextMaxBlock(myCar, nextSpeedState(myCar.speed,myCar.damage)+1));
+        List<Object> blocksIfBoost = viewableBlocks.subList(0, nextMaxBlock(myCar, speedIfBoost(myCar.damage)+1));
         //jika masih menggunakan boost, prioritaskan strategi menghindari rintangan
         if(myCar.speed!=15){
             //perbaiki bila rusak darurat
@@ -307,5 +307,9 @@ public class Bot {
         }else{
             return 15;
         }
+    }
+
+    private int nextMaxBlock(Car myCar, int defaultTarget) {
+        return Integer.min(1500 - myCar.position.block, defaultTarget);
     }
 }
