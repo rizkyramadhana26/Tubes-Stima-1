@@ -62,7 +62,7 @@ public class Bot {
             return LIZARD;
         }else if(decision=="BOOST"){
             return BOOST;
-        }else if(decision=="ACCELERATE"){
+        } else if (decision == "ACCELERATE") {
             return ACCELERATE;
         }
         //pakai EMP
@@ -74,12 +74,33 @@ public class Bot {
             return new TweetCommand(opponent.position.lane, opponent.position.block+opponent.speed+3);  //ubah penempatan cybertruck di sini 
         }       
         //pakai OIL
-        if (hasPowerUp(PowerUps.OIL, myCar.powerups) && myCar.position.block > opponent.position.block && myCar.position.block-opponent.position.block<Bot.maxSpeed){
+        if (hasPowerUp(PowerUps.OIL, myCar.powerups) && myCar.position.block > opponent.position.block
+                && myCar.position.block - opponent.position.block < Bot.maxSpeed) {
             return OIL;
         }
+        
         //perbaikan opsional agar boost / accelerate tidak sia sia
         if ((myCar.damage == 1 && myCar.speed==9) || (myCar.damage == 2 && myCar.speed==8) || (myCar.damage == 3 && myCar.speed==6)) {
             return FIX;
+        }
+        
+        if (myCar.speed >= getDamagedMaxSpeed(myCar.damage)) {
+            //pakai EMP
+            if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
+                return EMP;   
+            }
+            //pakai TWEET
+            if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
+                return new TweetCommand(opponent.position.lane, opponent.position.block+opponent.speed+3);  //ubah penempatan cybertruck di sini 
+            }       
+            //pakai OIL
+            if (hasPowerUp(PowerUps.OIL, myCar.powerups)){
+                return OIL;
+            }
+            //pakai LIZARD
+            if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
+                return LIZARD;
+            }
         }
         //pakai boost
         // if(hasPowerUp(PowerUps.BOOST, myCar.powerups) && !(blocksIfBoost.contains(Terrain.MUD) || blocksIfBoost.contains(Terrain.OIL_SPILL) || blocksIfAccelerating.contains(Terrain.WALL))){
@@ -280,9 +301,10 @@ public class Bot {
         int lane=gameState.player.position.lane;
         List<Lane[]> map = gameState.lanes;
         point_nothing += countPoint(getSublane(map.get(lane - 1), gameState, currentSpeed));
+        point_boost -= gameState.player.boosting ? 100 : 0;
         point_boost += countPowerups(available, PowerUps.BOOST) * 2;
         point_boost += countPoint(getSublane(map.get(lane - 1), gameState, speedIfBoost(gameState.player.damage)));
-        point_accelerate -= (gameState.player.speed >= getDamagedMaxSpeed(gameState.player.damage)) ? 10 : 0;
+        point_accelerate -= (gameState.player.speed >= getDamagedMaxSpeed(gameState.player.damage)) ? 100 : 0;
         point_accelerate += countPoint(getSublane(map.get(lane - 1), gameState, nextSpeedState(currentSpeed, gameState.player.damage)));
         try {
             point_lizard+=countPoint(Arrays.copyOfRange(map.get(lane-1),block-startBlock+currentSpeed,block-startBlock+currentSpeed+1));
