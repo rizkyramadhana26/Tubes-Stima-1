@@ -42,10 +42,6 @@ public class Bot {
         Car myCar = gameState.player;
         Car opponent = gameState.opponent;
 
-        List<Object> viewableBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
-        List<Object> blocks = viewableBlocks.subList(0,myCar.speed+1);
-        List<Object> blocksIfAccelerating = viewableBlocks.subList(0,nextSpeedState(myCar.speed,myCar.damage)+1);
-        List<Object> blocksIfBoost = viewableBlocks.subList(0,speedIfBoost(myCar.damage)+1);
         //jika masih menggunakan boost, prioritaskan strategi menghindari rintangan
         //perbaiki bila rusak darurat
         if ((myCar.damage==4 && myCar.speed==3) || myCar.damage==5) {
@@ -123,15 +119,15 @@ public class Bot {
         return blocks;
     }
 
-    // private int countPowerups(PowerUps[] available, PowerUps powerups){
-    //     int count=0;
-    //     for(PowerUps x : available){
-    //         if(x.equals(powerups)){
-    //             count=count+1;
-    //         }
-    //     }
-    //     return count;
-    // }
+    private int countPowerups(PowerUps[] available, PowerUps powerups){
+        int count=0;
+        for(PowerUps x : available){
+            if(x.equals(powerups)){
+                count=count+1;
+            }
+        }
+        return count;
+    }
 
     private int nextSpeedState(int currentSpeed,int damage){
         if(currentSpeed==0){
@@ -165,19 +161,33 @@ public class Bot {
         }
     }
 
-    private int speedIfBoost(int damage){
-        if(damage==5){
+    private int speedIfBoost(int damage) {
+        if (damage == 5) {
             return 0;
-        }else if(damage==4){
+        } else if (damage == 4) {
             return 3;
-        }else if(damage==3){
+        } else if (damage == 3) {
             return 6;
-        }else if(damage==2){
+        } else if (damage == 2) {
             return 8;
-        }else if(damage==1){
+        } else if (damage == 1) {
             return 9;
-        }else{
+        } else {
             return 15;
+        }
+    }
+    
+    private int getDamagedMaxSpeed(int damage) {
+        if (damage == 5) {
+            return 0;
+        } else if (damage == 4) {
+            return 3;
+        } else if (damage == 3) {
+            return 6;
+        } else if (damage == 2) {
+            return 8;
+        } else {
+            return 9;
         }
     }
 
@@ -269,13 +279,15 @@ public class Bot {
         int currentSpeed = gameState.player.speed;
         int lane=gameState.player.position.lane;
         List<Lane[]> map = gameState.lanes;
-        point_nothing+=countPoint(getSublane(map.get(lane-1),gameState,currentSpeed));
-        point_boost+=countPoint(getSublane(map.get(lane-1),gameState,speedIfBoost(gameState.player.damage)));
-        point_accelerate+=countPoint(getSublane(map.get(lane-1),gameState,nextSpeedState(currentSpeed,gameState.player.damage)));
+        point_nothing += countPoint(getSublane(map.get(lane - 1), gameState, currentSpeed));
+        point_boost += countPowerups(available, PowerUps.BOOST) * 2;
+        point_boost += countPoint(getSublane(map.get(lane - 1), gameState, speedIfBoost(gameState.player.damage)));
+        point_accelerate -= (gameState.player.speed >= getDamagedMaxSpeed(gameState.player.damage)) ? 10 : 0;
+        point_accelerate += countPoint(getSublane(map.get(lane - 1), gameState, nextSpeedState(currentSpeed, gameState.player.damage)));
         try {
             point_lizard+=countPoint(Arrays.copyOfRange(map.get(lane-1),block-startBlock+currentSpeed,block-startBlock+currentSpeed+1));
         } finally{
-
+        
         }
         int max_point = max(max(point_nothing,point_accelerate), max(point_lizard,point_boost));
         if(max_point==point_nothing){
