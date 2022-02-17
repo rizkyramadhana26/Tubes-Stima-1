@@ -306,10 +306,8 @@ public class Bot {
         point_boost += countPoint(getSublane(map.get(lane - 1), gameState, speedIfBoost(gameState.player.damage)));
         point_accelerate -= (gameState.player.speed >= getDamagedMaxSpeed(gameState.player.damage)) ? 100 : 0;
         point_accelerate += countPoint(getSublane(map.get(lane - 1), gameState, nextSpeedState(currentSpeed, gameState.player.damage)));
-        try {
+        if(block-startBlock+currentSpeed < 1500){
             point_lizard+=countPoint(Arrays.copyOfRange(map.get(lane-1),block-startBlock+currentSpeed,block-startBlock+currentSpeed+1));
-        } finally{
-        
         }
         int max_point = max(max(point_nothing,point_accelerate), max(point_lizard,point_boost));
         if(max_point==point_nothing){
